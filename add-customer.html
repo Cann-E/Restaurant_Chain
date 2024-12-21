@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Add Customer - DBS10 Restaurant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: #ffcc00;
+            margin-bottom: 1rem;
+        }
+
+        nav {
+            margin-bottom: 2rem;
+        }
+
+        nav a {
+            color: #ffcc00;
+            text-decoration: none;
+            margin: 0 10px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        nav a:hover {
+            background-color: rgba(255, 204, 0, 0.2);
+        }
+
+        main {
+            width: 100%;
+            max-width: 600px;
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            color: #ffcc00;
+            font-weight: bold;
+        }
+
+        input, select {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ffcc00;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #ffb700;
+            box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.2);
+        }
+
+        button {
+            background-color: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background-color: #ffb700;
+        }
+
+        .error-message {
+            color: #ff4444;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .success-message {
+            background-color: rgba(76, 175, 80, 0.1);
+            border: 1px solid #4CAF50;
+            color: #4CAF50;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Add New Customer</h1>
+        <nav>
+            <a href="/"><i class="fas fa-home"></i> Home</a>
+            <a href="/customers.html"><i class="fas fa-users"></i> Customers List</a>
+        </nav>
+    </header>
+
+    <main>
+        <div id="successMessage" class="success-message">
+            Customer added successfully!
+        </div>
+    
+        <form id="addCustomerForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required minlength="3" maxlength="16">
+                <span class="error-message" id="usernameError"></span>
+            </div>
+    
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                <span class="error-message" id="emailError"></span>
+            </div>
+    
+            <div class="form-group">
+                <label for="phone_number">Phone Number:</label>
+                <input type="tel" id="phone_number" name="phone_number" required 
+                       pattern="^\+?[1-9]\d{1,19}$" placeholder="+1234567890">
+                <span class="error-message" id="phoneError"></span>
+            </div>
+    
+            <div class="form-group">
+                <label for="first_name">First Name:</label>
+                <input type="text" id="first_name" name="First_name" required maxlength="12">
+                <span class="error-message" id="firstNameError"></span>
+            </div>
+    
+            <div class="form-group">
+                <label for="last_name">Last Name:</label>
+                <input type="text" id="last_name" name="Last_name" required maxlength="16">
+                <span class="error-message" id="lastNameError"></span>
+            </div>
+    
+            <div class="form-group">
+                <label for="member">Membership Status:</label>
+                <select id="member" name="member" required>
+                    <option value="true">Member</option>
+                    <option value="false">Non-Member</option>
+                </select>
+            </div>
+    
+            <!-- New Location Dropdown -->
+            <div class="form-group">
+                <label for="location">Location:</label>
+                <select id="location" name="location" required>
+                    <option value="">Select Location</option>
+                    <option value="Chicago, Illinois">Chicago, Illinois</option>
+                    <option value="Dallas, Texas">Dallas, Texas</option>
+                    <option value="Miami, Florida">Miami, Florida</option>
+                    <option value="San Francisco">San Francisco</option>
+                    <option value="Seattle">Seattle</option>
+                </select>
+                <span class="error-message" id="locationError"></span>
+            </div>
+    
+            <button type="submit">
+                <i class="fas fa-user-plus"></i> Add Customer
+            </button>
+        </form>
+    </main>
+    
+
+    <script>
+        const form = document.getElementById('addCustomerForm');
+        const successMessage = document.getElementById('successMessage');
+
+        function showError(elementId, message) {
+            const errorElement = document.getElementById(elementId + 'Error');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.error-message').forEach(element => {
+                element.style.display = 'none';
+            });
+        }
+
+        function validateForm() {
+            let isValid = true;
+            clearErrors();
+
+            // Validate email format
+            const emailRegex = /^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$/;
+            if (!emailRegex.test(form.email.value)) {
+                showError('email', 'Please enter a valid email address');
+                isValid = false;
+            }
+
+            // Validate phone number format
+            const phoneRegex = /^\+?[1-9]\d{1,19}$/;
+            if (!phoneRegex.test(form.phone_number.value)) {
+                showError('phone', 'Please enter a valid phone number');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!validateForm()) {
+                return;
+            }
+
+            const formData = {
+                username: form.username.value,
+                email: form.email.value,
+                phone_number: form.phone_number.value,
+                "First_name": form.first_name.value,
+                "Last_name": form.last_name.value,
+                member: form.member.value === 'true'
+            };
+
+            try {
+                form.classList.add('loading');
+                const response = await fetch('/api/customers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to add customer');
+                }
+
+                successMessage.style.display = 'block';
+                form.reset();
+                
+                // Redirect to customers list after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '/customers.html';
+                }, 2000);
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                form.classList.remove('loading');
+            }
+        });
+    </script>
+</body>
+</html>
