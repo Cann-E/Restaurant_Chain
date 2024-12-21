@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #ffcc00;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .filters {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .filters input, .filters select {
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: #222;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        .stat-card h3 {
+            color: #ffcc00;
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table th, table td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        table th {
+            background-color: #222;
+            color: #ffcc00;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+
+        .payment-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .payment-cash {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .payment-card {
+            background-color: #007bff;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="/homepage.html"><i class="fa fa-home"></i> Home</a>
+        <a href="/dashboard.html"><i class="fa fa-chart-line"></i> Dashboard</a>
+        <a href="/menu-items.html"><i class="fa fa-utensils"></i> Menu Items</a>
+        <a href="/place-order.html"><i class="fas fa-clipboard-list"></i> Place Order</a>
+        <a href="/transactions.html"><i class="fa fa-file-invoice"></i> Transactions</a>
+        <a href="/customers.html"><i class="fa fa-users"></i>Users Profile Management</a>
+    </div>
+    <h1>Transactions</h1>
+
+    <div class="stats">
+        <div class="stat-card">
+            <h3>Total Transactions</h3>
+            <p id="total-transactions">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Total Revenue</h3>
+            <p id="total-revenue">$0.00</p>
+        </div>
+        <div class="stat-card">
+            <h3>Cash Payments</h3>
+            <p id="cash-payments">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Card Payments</h3>
+            <p id="card-payments">0</p>
+        </div>
+    </div>
+
+    <div class="filters">
+        <input type="text" id="search-input" placeholder="Search transactions...">
+        <select id="payment-filter">
+            <option value="all">All Payment Types</option>
+            <option value="cash">Cash</option>
+            <option value="card">Card</option>
+        </select>
+        <select id="date-filter">
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+        </select>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Transaction ID</th>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Order ID</th>
+                <th>Amount</th>
+                <th>Payment Method</th>
+            </tr>
+        </thead>
+        <tbody id="transactions-body">
+            <tr>
+                <td colspan="6" class="empty-state">Loading transactions...</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        let transactions = [];
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString();
+        }
+
+        async function fetchTransactions() {
+            try {
+                const response = await fetch('/api/transactions');
+                transactions = await response.json();
+                renderTransactions(transactions);
+                updateStats();
+            } catch (error) {
+                console.error('Error fetching transactions:', error);
+            }
+        }
+
+        function updateStats() {
+            const totalTransactions = transactions.length;
+            const totalRevenue = transactions.reduce((sum, t) => sum + Number(t.amount), 0);
+            const cashPayments = transactions.filter(t => t.cash).length;
+            const cardPayments = transactions.filter(t => !t.cash).length;
+
+            document.getElementById('total-transactions').textContent = totalTransactions;
+            document.getElementById('total-revenue').textContent = formatCurrency(totalRevenue);
+            document.getElementById('cash-payments').textContent = cashPayments;
+            document.getElementById('card-payments').textContent = cardPayments;
+        }
+
+        function filterTransactions() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const paymentFilter = document.getElementById('payment-filter').value;
+            const dateFilter = document.getElementById('date-filter').value;
+
+            let filtered = transactions.filter(txn => {
+                const matchesSearch = txn.username.toLowerCase().includes(searchTerm) || 
+                                      txn.transaction_id.toString().includes(searchTerm);
+                
+                const matchesPayment = paymentFilter === 'all' || 
+                                     (paymentFilter === 'cash' && txn.cash) || 
+                                     (paymentFilter === 'card' && !txn.cash);
+
+                const txnDate = new Date(txn.created_at);
+                const now = new Date();
+                let matchesDate = true;
+
+                if (dateFilter === 'today') {
+                    matchesDate = txnDate.toDateString() === now.toDateString();
+                } else if (dateFilter === 'week') {
+                    const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+                    matchesDate = txnDate >= weekAgo;
+                } else if (dateFilter === 'month') {
+                    matchesDate = txnDate.getMonth() === now.getMonth() && 
+                                  txnDate.getFullYear() === now.getFullYear();
+                }
+
+                return matchesSearch && matchesPayment && matchesDate;
+            });
+
+            renderTransactions(filtered);
+        }
+
+        function renderTransactions(transactionsToShow) {
+            const tbody = document.getElementById('transactions-body');
+            
+            if (transactionsToShow.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">No transactions found</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = transactionsToShow.map(txn => `
+                <tr>
+                    <td>${txn.transaction_id}</td>
+                    <td>${formatDate(txn.created_at)}</td>
+                    <td>${txn.username}</td>
+                    <td>${txn.order_id}</td>
+                    <td>${formatCurrency(txn.amount)}</td>
+                    <td>
+                        <span class="payment-badge ${txn.cash ? 'payment-cash' : 'payment-card'}">
+                            ${txn.cash ? '<i class="fas fa-money-bill-wave"></i> Cash' : '<i class="fas fa-credit-card"></i> Card'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Event listeners
+        document.getElementById('search-input').addEventListener('input', filterTransactions);
+        document.getElementById('payment-filter').addEventListener('change', filterTransactions);
+        document.getElementById('date-filter').addEventListener('change', filterTransactions);
+
+        // Initial load
+        fetchTransactions();
+    </script>
+</body>
+</html>

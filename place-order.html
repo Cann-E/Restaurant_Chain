@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Place Order</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: #222;
+            padding: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar a {
+            color: #ffcc00;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        h1, h2, h3 {
+            text-align: center;
+            margin: 20px 0;
+            color: #ffcc00;
+        }
+        .main-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 20px;
+        }
+        .menu-items-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .menu-category {
+            margin-bottom: 20px;
+        }
+        .menu-item {
+            background-color: rgba(255, 204, 0, 0.2);
+            border: 1px solid #ffcc00;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .menu-item:hover {
+            background-color: rgba(255, 204, 0, 0.5);
+        }
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .order-summary-container {
+            flex: 1;
+            background-color: #222;
+            border-radius: 10px;
+            padding: 20px;
+            height: fit-content;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ffcc00;
+            border-radius: 5px;
+            background-color: #333;
+            color: #fff;
+        }
+        button {
+            background-color: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e6b800;
+        }
+        .quantity-btn {
+            background-color: #ffcc00;
+            color: #000;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .quantity-display {
+            color: #ffcc00;
+            min-width: 20px;
+            text-align: center;
+        }
+        select.form-control {
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #ffcc00;
+        }
+        select.form-control option {
+            background-color: #333;
+            color: #fff;
+        }
+        .payment-method {
+            margin: 15px 0;
+        }
+        .payment-method label {
+            margin-right: 15px;
+            color: #fff;
+        }
+        .total-amount {
+            color: #ffcc00;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/homepage.html">Home</a>
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/menu-items.html">Menu Items</a>
+        <a href="/transactions.html">Transactions</a>
+        <a href="/customers.html">Users Profile Management</a>
+    </nav>
+
+    <h1>Place Your Order</h1>
+
+    <div class="main-container">
+        <div class="menu-items-container">
+            <select id="franchise-select" class="form-control">
+                <option value="">Select a location...</option>
+            </select>
+            <div id="menu-items"></div>
+        </div>
+
+        <div class="order-summary-container">
+            <h2>Order Summary</h2>
+            <div id="selected-items"></div>
+            <div class="total-amount">Total: $<span id="total-amount">0.00</span></div>
+
+            <select id="customer-select" class="form-control">
+                <option value="">Select a customer...</option>
+            </select>
+
+            <div class="payment-method">
+                <h3>Payment Method</h3>
+                <label>
+                    <input type="radio" name="payment-method" value="cash" checked>
+                    Cash
+                </label>
+                <label>
+                    <input type="radio" name="payment-method" value="credit">
+                    Credit Card
+                </label>
+            </div>
+
+            <button id="place-order-btn">Place Order</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedItems = new Map();
+        let franchises = [];
+        let customers = [];
+        let menuItems = [];
+
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Promise.all([
+                loadFranchises(),
+                loadCustomers(),
+                loadMenuItems()
+            ]);
+        });
+
+        // Load franchises
+        async function loadFranchises() {
+            try {
+                const response = await fetch('/api/franchises/test');
+                franchises = await response.json();
+                const select = document.getElementById('franchise-select');
+                franchises.forEach(franchise => {
+                    const option = document.createElement('option');
+                    option.value = franchise.id;
+                    option.textContent = `${franchise.city}, ${franchise.state}`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading franchises:', error);
+            }
+        }
+
+        // Load customers
+        async function loadCustomers() {
+            try {
+                const response = await fetch('/api/customers');
+                customers = await response.json();
+                const select = document.getElementById('customer-select');
+                customers.forEach(customer => {
+                    const option = document.createElement('option');
+                    option.value = customer.user_id;
+                    option.textContent = `${customer.First_name} ${customer.Last_name}`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading customers:', error);
+            }
+        }
+
+        // Load menu items
+        async function loadMenuItems() {
+            try {
+                const response = await fetch('/api/menu-items');
+                menuItems = await response.json();
+                displayMenuItems();
+            } catch (error) {
+                console.error('Error loading menu items:', error);
+            }
+        }
+
+       // Display menu items
+function displayMenuItems() {
+    const container = document.getElementById('menu-items');
+    container.innerHTML = '';
+
+    const itemsByCategory = menuItems.reduce((acc, item) => {
+        if (!acc[item.type_of_menu_item]) {
+            acc[item.type_of_menu_item] = [];
+        }
+        acc[item.type_of_menu_item].push(item);
+        return acc;
+    }, {});
+
+    Object.entries(itemsByCategory).forEach(([category, items]) => {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'menu-category';
+        categoryDiv.innerHTML = `<h2>${category}</h2>`;
+
+        items.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'menu-item';
+            itemDiv.innerHTML = `
+                <div>
+                    <span>${item.item_name}</span>
+                    <span>$${item.price}</span>
+                </div>
+                <div class="quantity-controls">
+                    <button class="quantity-btn minus-btn">-</button>
+                    <span class="quantity-display" id="quantity-${item.menu_item_id}">0</span>
+                    <button class="quantity-btn plus-btn">+</button>
+                </div>
+            `;
+
+            // Add event listeners
+            const minusBtn = itemDiv.querySelector('.minus-btn');
+            const plusBtn = itemDiv.querySelector('.plus-btn');
+            
+            minusBtn.addEventListener('click', () => adjustQuantity(item.menu_item_id, -1));
+            plusBtn.addEventListener('click', () => adjustQuantity(item.menu_item_id, 1));
+
+            categoryDiv.appendChild(itemDiv);
+        });
+
+        container.appendChild(categoryDiv);
+    });
+}
+        // Adjust item quantity
+        function adjustQuantity(menuItemId, change) {
+            const item = menuItems.find(i => i.menu_item_id === menuItemId);
+            if (!item) return;
+
+            const currentQuantity = selectedItems.has(menuItemId) ? selectedItems.get(menuItemId).quantity : 0;
+            const newQuantity = Math.max(0, currentQuantity + change);
+
+            if (newQuantity === 0) {
+                selectedItems.delete(menuItemId);
+            } else {
+                selectedItems.set(menuItemId, { ...item, quantity: newQuantity });
+            }
+
+            document.getElementById(`quantity-${menuItemId}`).textContent = newQuantity;
+            updateOrderSummary();
+        }
+
+        // Update order summary
+        function updateOrderSummary() {
+            const summaryContainer = document.getElementById('selected-items');
+            let total = 0;
+
+            const summaryHTML = Array.from(selectedItems.values())
+                .map(item => {
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+                    return `
+                        <div class="order-item">
+                            <span>${item.item_name} x ${item.quantity}</span>
+                            <span>$${itemTotal.toFixed(2)}</span>
+                        </div>
+                    `;
+                })
+                .join('');
+
+            summaryContainer.innerHTML = summaryHTML;
+            document.getElementById('total-amount').textContent = total.toFixed(2);
+        }
+
+    // Place order
+document.getElementById('place-order-btn').addEventListener('click', async () => {
+    const franchiseId = document.getElementById('franchise-select').value;
+    const customerId = document.getElementById('customer-select').value;
+    const paymentMethod = document.querySelector('input[name="payment-method"]:checked').value;
+    const totalAmount = parseFloat(document.getElementById('total-amount').textContent);
+
+    
+
+    if (!franchiseId || !customerId || selectedItems.size === 0) {
+        alert('Please select a franchise, customer, and at least one menu item.');
+        return;
+    }
+
+    // Ensure menu items are properly formatted as plain objects
+    const menuItemsArray = Array.from(selectedItems.values()).map(item => ({
+        menu_item_id: Number(item.menu_item_id), // Ensure it's a number
+        quantity: Number(item.quantity)          // Ensure it's a number
+    }));
+
+    const orderData = {
+        customer_id: Number(customerId),
+        franchise_id: Number(franchiseId),
+        menu_items: menuItemsArray,
+        total_amount: totalAmount,
+        payment_method: paymentMethod
+    };
+
+    try {
+        const response = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to place order');
+        }
+
+        const result = await response.json();
+        alert('Order placed successfully!');
+        
+        // Reset form
+        selectedItems.clear();
+        document.querySelectorAll('[id^="quantity-"]').forEach(el => el.textContent = '0');
+        updateOrderSummary();
+    } catch (error) {
+        console.error('Error placing order:', error);
+        alert('Failed to place order. Please try again.');
+    }
+});
+    </script>
+</body>
+</html>

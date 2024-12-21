@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flaming Dragon Asian Restaurant</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            width: 100%;
+            padding: 2rem 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: #ffcc00;
+            font-size: 2.5rem;
+            margin: 0;
+            padding: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            color: #ffd700;
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .nav-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            padding: 2rem;
+            max-width: 800px;
+            width: 90%;
+        }
+
+        .nav-item {
+            background-color: rgba(255, 204, 0, 0.9);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: #000;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 150px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item:hover {
+            transform: translateY(-5px);
+            background-color: #ffb700;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-item i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .nav-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-description {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .nav-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-item {
+                min-height: 120px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <h1>Flaming Dragon Restaurant</h1>
+        <div class="subtitle">  Authentic Eastern Asian Cuisine</div>
+    </div>
+
+    <div class="nav-container">
+
+        <a href="/customers.html" class="nav-item">
+            <i class="fas fa-users"></i>
+            <div class="nav-title">Users Profile Management</div>
+            <div class="nav-description">Manage user profiles</div>
+        </a>
+
+
+        <a href="/menu-items.html" class="nav-item">
+            <i class="fas fa-utensils"></i>
+            <div class="nav-title">Menu</div>
+            <div class="nav-description">Browse our menu items and pricing</div>
+        </a>
+
+        <a href="/place-order.html" class="nav-item">
+            <i class="fas fa-clipboard-list"></i>
+            <div class="nav-title">Place Order</div>
+            <div class="nav-description">Order food for pickup or delivery</div>
+        </a>
+
+        <a href="/transactions.html" class="nav-item">
+            <i class="fas fa-receipt"></i>
+            <div class="nav-title">Transactions</div>
+            <div class="nav-description">View order history and payments</div>
+        </a>
+
+        <a href="/dashboard.html" class="nav-item">
+            <i class="fas fa-chart-bar"></i>
+            <div class="nav-title">Dashboard</div>
+            <div class="nav-description">View analytics and reports</div>
+        </a>
+
+        <a href="/franchises.html" class="nav-item">
+            <i class="fas fa-store"></i>
+            <div class="nav-title">Locations</div>
+            <div class="nav-description">Find our restaurant locations</div>
+        </a>
+    </div>
+</body>
+</html>
